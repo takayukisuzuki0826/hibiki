@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hibiki">
+  <meta name="description" content="周波数で、ととのう。バイノーラルビート・ソルフェジオ・環境音の瞑想サウンドセラピーPWA。">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
+  <!-- Google Fonts: Noto Sans JP (lightweight subset) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/styles.css">
+  <title>Hibiki（響）</title>
+</head>
+<body>
+  <div id="app">
+
+    <!-- ── オーロラ背景レイヤー ─────────────────── -->
+    <div class="aurora" aria-hidden="true">
+      <div class="aurora__orb aurora__orb--1"></div>
+      <div class="aurora__orb aurora__orb--2"></div>
+      <div class="aurora__orb aurora__orb--3"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         ホームビュー
+    ══════════════════════════════════════════════ -->
+    <main id="home-view" class="view view--active" role="main" aria-label="ホーム">
+      <header class="app-header">
+        <div class="app-header__logo">
+          <span class="app-header__icon" aria-hidden="true">🔔</span>
+          <span class="app-header__title">響</span>
+          <span class="app-header__subtitle">Hibiki</span>
+        </div>
+        <p class="app-header__tagline">周波数で、ととのう。</p>
+      </header>
+
+      <!-- カテゴリタブ（app.jsが生成） -->
+      <nav id="category-tabs"
+           class="category-tabs"
+           aria-label="カテゴリ"
+           role="tablist">
+        <!-- .category-tab[data-category-id] ボタン群をapp.jsが挿入 -->
+      </nav>
+
+      <!-- プリセットグリッド（app.jsが生成） -->
+      <section id="preset-grid"
+               class="preset-grid"
+               aria-label="プリセット一覧"
+               role="tabpanel">
+        <!-- .preset-card[data-preset-id] ボタン群をapp.jsが挿入 -->
+      </section>
+    </main>
+
+    <!-- ══════════════════════════════════════════════
+         お気に入りビュー
+    ══════════════════════════════════════════════ -->
+    <main id="favorites-view" class="view" role="main" aria-label="お気に入り">
+      <header class="view-header">
+        <h1 class="view-header__title">お気に入り</h1>
+        <p class="view-header__sub">長押しでプリセットを保存できます</p>
+      </header>
+
+      <section id="favorites-grid"
+               class="preset-grid"
+               aria-label="お気に入りプリセット">
+        <!-- app.jsが描画 -->
+      </section>
+
+      <p class="empty-state" id="favorites-empty" hidden>
+        <span class="empty-state__icon" aria-hidden="true">✨</span>
+        <span>まだお気に入りがありません。<br>プリセット画面の ♡ ボタンで追加できます。</span>
+      </p>
+    </main>
+
+    <!-- ══════════════════════════════════════════════
+         カスタムビュー
+    ══════════════════════════════════════════════ -->
+    <main id="custom-view" class="view" role="main" aria-label="カスタム周波数">
+      <header class="view-header">
+        <h1 class="view-header__title">カスタム周波数</h1>
+        <p class="view-header__sub">自分だけの周波数を設定する</p>
+      </header>
+
+      <div class="custom-card glass-card">
+        <!-- 合成方式 -->
+        <div class="form-group">
+          <label class="form-label" for="custom-method">合成方式</label>
+          <div class="select-wrapper">
+            <select id="custom-method" class="form-select" aria-label="合成方式を選択">
+              <option value="binaural">バイノーラルビート（ヘッドホン推奨）</option>
+              <option value="isochronic">アイソクロニックトーン（スピーカーOK）</option>
+              <option value="solfeggio">ソルフェジオ周波数</option>
+            </select>
+            <span class="select-arrow" aria-hidden="true">▾</span>
+          </div>
+        </div>
+
+        <!-- キャリア周波数 -->
+        <div class="form-group">
+          <div class="form-label-row">
+            <label class="form-label" for="custom-carrier">キャリア周波数</label>
+            <span class="form-value">
+              <span id="custom-carrier-val">110</span> Hz
+            </span>
+          </div>
+          <input
+            id="custom-carrier"
+            type="range"
+            min="20"
+            max="500"
+            step="1"
+            value="110"
+            class="range-slider"
+            aria-label="キャリア周波数 (Hz)"
+            aria-valuemin="20"
+            aria-valuemax="500"
+          >
+          <div class="range-hints">
+            <span>20 Hz</span>
+            <span>500 Hz</span>
+          </div>
+        </div>
+
+        <!-- ビート周波数 -->
+        <div class="form-group" id="custom-beat-group">
+          <div class="form-label-row">
+            <label class="form-label" for="custom-beat">ビート周波数</label>
+            <span class="form-value">
+              <span id="custom-beat-val">8</span> Hz
+            </span>
+          </div>
+          <input
+            id="custom-beat"
+            type="range"
+            min="0.5"
+            max="40"
+            step="0.1"
+            value="8"
+            class="range-slider"
+            aria-label="ビート周波数 (Hz)"
+            aria-valuemin="0.5"
+            aria-valuemax="40"
+          >
+          <div class="range-hints">
+            <span>0.5 Hz デルタ</span>
+            <span>40 Hz ガンマ</span>
+          </div>
+        </div>
+
+        <!-- 再生ボタン -->
+        <button
+          id="custom-play"
+          class="btn-play-custom"
+          type="button"
+          aria-label="カスタム周波数を再生"
+        >
+          <span class="btn-play-custom__icon" aria-hidden="true">▶</span>
+          カスタムで再生
+        </button>
+      </div>
+
+      <!-- 脳波ガイド -->
+      <div class="band-guide glass-card">
+        <h2 class="band-guide__title">脳波帯域の目安</h2>
+        <ul class="band-guide__list" role="list">
+          <li class="band-guide__item">
+            <span class="band-dot" style="background:#5b6ee1" aria-hidden="true"></span>
+            <span class="band-guide__name">デルタ波</span>
+            <span class="band-guide__range">0.5–4 Hz</span>
+            <span class="band-guide__use">深い睡眠</span>
+          </li>
+          <li class="band-guide__item">
+            <span class="band-dot" style="background:#7b5be1" aria-hidden="true"></span>
+            <span class="band-guide__name">シータ波</span>
+            <span class="band-guide__range">4–8 Hz</span>
+            <span class="band-guide__use">瞑想・入眠</span>
+          </li>
+          <li class="band-guide__item">
+            <span class="band-dot" style="background:#5be1c4" aria-hidden="true"></span>
+            <span class="band-guide__name">アルファ波</span>
+            <span class="band-guide__range">8–14 Hz</span>
+            <span class="band-guide__use">リラックス集中</span>
+          </li>
+          <li class="band-guide__item">
+            <span class="band-dot" style="background:#e1b15b" aria-hidden="true"></span>
+            <span class="band-guide__name">ベータ波</span>
+            <span class="band-guide__range">14–30 Hz</span>
+            <span class="band-guide__use">覚醒・集中</span>
+          </li>
+          <li class="band-guide__item">
+            <span class="band-dot" style="background:#e15b7b" aria-hidden="true"></span>
+            <span class="band-guide__name">ガンマ波</span>
+            <span class="band-guide__range">30–100 Hz</span>
+            <span class="band-guide__use">高度認知</span>
+          </li>
+          <li class="band-guide__item">
+            <span class="band-dot" style="background:#e1c95b" aria-hidden="true"></span>
+            <span class="band-guide__name">ソルフェジオ</span>
+            <span class="band-guide__range">396–963 Hz</span>
+            <span class="band-guide__use">調律・癒し</span>
+          </li>
+        </ul>
+      </div>
+    </main>
+
+    <!-- ══════════════════════════════════════════════
+         プレイヤー（ボトムシート）
+         data-state: "hidden" | "mini" | "full"
+    ══════════════════════════════════════════════ -->
+    <div id="player" data-state="hidden" role="region" aria-label="プレイヤー">
+      <!-- ドラッグハンドル -->
+      <div class="player__handle" aria-hidden="true">
+        <span class="player__handle-bar"></span>
+      </div>
+
+      <!-- ミニバー（miniステート時に見える） -->
+      <div class="player__mini-bar" aria-label="プレイヤー（ミニ）">
+        <div class="player__mini-info">
+          <span class="player__mini-icon" aria-hidden="true">🎵</span>
+          <span id="player-title" class="player__title">—</span>
+        </div>
+        <button
+          id="play-btn"
+          class="play-btn"
+          type="button"
+          aria-pressed="false"
+          aria-label="再生"
+        >
+          <span class="play-btn__icon" aria-hidden="true">▶</span>
+        </button>
+      </div>
+
+      <!-- フルパネル -->
+      <div class="player__full" aria-label="プレイヤー（フル）">
+
+        <!-- ヘッダー情報 -->
+        <div class="player__info">
+          <h2 class="player__preset-title" aria-live="polite">
+            <span id="player-title-full" class="player__title-text">—</span>
+          </h2>
+          <div id="player-band" class="player__band-badge" aria-live="polite">—</div>
+        </div>
+
+        <!-- ビジュアライザー -->
+        <div class="player__visualizer-wrap">
+          <canvas id="visualizer" class="visualizer" aria-label="ビジュアライザー" role="img"></canvas>
+        </div>
+
+        <!-- ヘッドホンヒント -->
+        <p id="headphone-hint" class="headphone-hint" hidden aria-live="polite">
+          <span aria-hidden="true">🎧</span> バイノーラルにはヘッドホンをご利用ください
+        </p>
+
+        <!-- 再生コントロール -->
+        <div class="player__controls">
+          <!-- お気に入りボタン -->
+          <button
+            id="fav-btn"
+            class="icon-btn icon-btn--fav"
+            type="button"
+            aria-pressed="false"
+            aria-label="お気に入りに追加"
+          >
+            <span class="icon-btn__icon" aria-hidden="true">♡</span>
+          </button>
+
+          <!-- 再生/停止（フル用） -->
+          <button
+            id="play-btn-full"
+            class="play-btn play-btn--large"
+            type="button"
+            aria-pressed="false"
+            aria-label="再生"
+          >
+            <span class="play-btn__icon" aria-hidden="true">▶</span>
+          </button>
+
+          <!-- プレースホルダー（対称レイアウト用） -->
+          <div class="icon-btn--placeholder" aria-hidden="true"></div>
+        </div>
+
+        <!-- 科学的根拠テキスト -->
+        <div class="player__science">
+          <p id="science-text" class="science-text" aria-live="polite">
+            プリセットを選ぶと、サウンドの科学的な根拠が表示されます。
+          </p>
+        </div>
+
+        <!-- ──── ミキサー ──── -->
+        <section class="mixer" aria-label="ミキサー">
+          <h3 class="mixer__title">ミキサー</h3>
+
+          <!-- トーン音量 -->
+          <div class="mixer__row">
+            <label class="mixer__label" for="mix-tone">
+              <span aria-hidden="true">🎵</span> トーン
+            </label>
+            <input
+              id="mix-tone"
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+              class="range-slider range-slider--mixer"
+              aria-label="トーン音量"
+            >
+          </div>
+
+          <!-- ノイズ -->
+          <div class="mixer__row">
+            <label class="mixer__label" for="mix-noise">
+              <span aria-hidden="true">🌊</span> ノイズ
+            </label>
+            <input
+              id="mix-noise"
+              type="range"
+              min="0"
+              max="100"
+              value="25"
+              class="range-slider range-slider--mixer"
+              aria-label="ノイズ音量"
+            >
+          </div>
+          <div class="mixer__select-row">
+            <label class="mixer__sub-label" for="noise-select">ノイズ種別</label>
+            <div class="select-wrapper select-wrapper--sm">
+              <select id="noise-select" class="form-select form-select--sm" aria-label="ノイズ種別">
+                <option value="off">オフ</option>
+                <option value="white">ホワイト</option>
+                <option value="pink">ピンク</option>
+                <option value="brown">ブラウン</option>
+              </select>
+              <span class="select-arrow" aria-hidden="true">▾</span>
+            </div>
+          </div>
+
+          <!-- 環境音 -->
+          <div class="mixer__row">
+            <label class="mixer__label" for="mix-amb">
+              <span aria-hidden="true">🌿</span> 環境音
+            </label>
+            <input
+              id="mix-amb"
+              type="range"
+              min="0"
+              max="100"
+              value="40"
+              class="range-slider range-slider--mixer"
+              aria-label="環境音音量"
+            >
+          </div>
+          <div class="mixer__select-row">
+            <label class="mixer__sub-label" for="amb-select">環境音種別</label>
+            <div class="select-wrapper select-wrapper--sm">
+              <select id="amb-select" class="form-select form-select--sm" aria-label="環境音種別">
+                <option value="off">オフ</option>
+                <option value="rain">🌧️ 雨</option>
+                <option value="waves">🌊 波</option>
+                <option value="forest">🌲 森</option>
+                <option value="night">🌌 夜</option>
+                <option value="sakura">🌸 桜</option>
+              </select>
+              <span class="select-arrow" aria-hidden="true">▾</span>
+            </div>
+          </div>
+
+          <!-- マスター音量 -->
+          <div class="mixer__row mixer__row--master">
+            <label class="mixer__label" for="master-vol">
+              <span aria-hidden="true">🔊</span> マスター
+            </label>
+            <input
+              id="master-vol"
+              type="range"
+              min="0"
+              max="100"
+              value="80"
+              class="range-slider range-slider--mixer range-slider--master"
+              aria-label="マスター音量"
+            >
+          </div>
+        </section>
+
+        <!-- ──── タイマー ──── -->
+        <section class="timer" aria-label="スリープタイマー">
+          <div class="timer__header">
+            <h3 class="mixer__title">タイマー</h3>
+            <span id="timer-remaining" class="timer__remaining" aria-live="polite" aria-label="残り時間"></span>
+          </div>
+          <div id="timer-select" class="timer__chips" role="group" aria-label="タイマー時間を選択">
+            <button class="timer-chip" data-min="5"  type="button" aria-label="5分">5分</button>
+            <button class="timer-chip" data-min="10" type="button" aria-label="10分">10分</button>
+            <button class="timer-chip" data-min="15" type="button" aria-label="15分">15分</button>
+            <button class="timer-chip" data-min="30" type="button" aria-label="30分">30分</button>
+            <button class="timer-chip" data-min="45" type="button" aria-label="45分">45分</button>
+            <button class="timer-chip" data-min="60" type="button" aria-label="60分">60分</button>
+            <button class="timer-chip" data-min="0"  type="button" aria-label="無制限">∞</button>
+          </div>
+        </section>
+
+      </div><!-- /player__full -->
+    </div><!-- /player -->
+
+    <!-- スクリム: fullステート時にviewport全面を覆う独立要素 -->
+    <div class="player-scrim" aria-hidden="true"></div>
+
+    <!-- ══════════════════════════════════════════════
+         ボトムナビゲーション
+    ══════════════════════════════════════════════ -->
+    <nav id="nav" class="bottom-nav" aria-label="メインナビゲーション">
+      <button
+        class="nav-btn nav-btn--active"
+        data-view="home"
+        type="button"
+        aria-label="ホーム"
+        aria-current="page"
+      >
+        <span class="nav-btn__icon" aria-hidden="true">🏠</span>
+        <span class="nav-btn__label">ホーム</span>
+      </button>
+      <button
+        class="nav-btn"
+        data-view="favorites"
+        type="button"
+        aria-label="お気に入り"
+      >
+        <span class="nav-btn__icon" aria-hidden="true">♡</span>
+        <span class="nav-btn__label">お気に入り</span>
+      </button>
+      <button
+        class="nav-btn"
+        data-view="custom"
+        type="button"
+        aria-label="カスタム"
+      >
+        <span class="nav-btn__icon" aria-hidden="true">🎛️</span>
+        <span class="nav-btn__label">カスタム</span>
+      </button>
+    </nav>
+
+    <!-- ══════════════════════════════════════════════
+         トースト通知
+    ══════════════════════════════════════════════ -->
+    <div
+      id="toast"
+      class="toast"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      hidden
+    ></div>
+
+  </div><!-- /app -->
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

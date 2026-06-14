@@ -1,0 +1,1540 @@
+/* ================================================================
+   Hibiki（響）— styles.css
+   W4担当。app.js（W5）が依存するCSS変数・セレクタを固定。
+   ================================================================ */
+
+/* ───────────────────────────────────────────────
+   1. CSS変数（:root）
+   --accent は app.js が動的更新する
+─────────────────────────────────────────────── */
+:root {
+  /* 背景 */
+  --bg: #0a0a1a;
+  --bg-mid: #141430;
+  --bg-top: #1a1040;
+
+  /* サーフェス（グラスカード） */
+  --surface: rgba(255, 255, 255, 0.055);
+  --surface-hover: rgba(255, 255, 255, 0.09);
+  --surface-border: rgba(255, 255, 255, 0.10);
+
+  /* テキスト */
+  --text: rgba(235, 232, 255, 0.95);
+  --text-dim: rgba(200, 194, 235, 0.82);
+  --text-muted: rgba(170, 162, 205, 0.72);
+
+  /* アクセント（app.jsが上書きする） */
+  --accent: #7b5be1;
+  /* --accent-glow / --accent-dim は セクション17の color-mix() で導出 */
+
+  /* UI */
+  --radius: 18px;
+  --radius-sm: 10px;
+  --radius-lg: 28px;
+  --blur: 24px;
+  --blur-lg: 48px;
+
+  /* シャドウ */
+  --shadow-card: 0 4px 32px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255,255,255,0.06) inset;
+  --shadow-player: 0 -4px 40px rgba(0, 0, 0, 0.6), 0 -1px 0 rgba(255,255,255,0.05) inset;
+
+  /* トランジション */
+  --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur: 280ms;
+  --dur-slow: 480ms;
+  --dur-fast: 160ms;
+
+  /* レイアウト */
+  --nav-height: 68px;
+  --player-mini-height: 64px;
+  --player-full-height: 92vh;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* フォント */
+  --font: 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+}
+
+/* ───────────────────────────────────────────────
+   2. リセット & ベース
+─────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  height: 100%;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.6;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+  cursor: pointer;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* フォーカスリング（キーボード専用） */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ───────────────────────────────────────────────
+   3. オーロラ背景アニメーション
+─────────────────────────────────────────────── */
+#app {
+  position: relative;
+  min-height: 100dvh;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.aurora {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* グラデーション背景 */
+.aurora::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, var(--bg-top) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 0% 100%, var(--bg-mid) 0%, transparent 50%),
+    var(--bg);
+}
+
+/* オーロラ光球 */
+.aurora__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(var(--blur-lg));
+  opacity: 0;
+  animation: aurora-float var(--dur-slow) var(--ease) forwards;
+}
+
+.aurora__orb--1 {
+  width: 70vw;
+  height: 50vh;
+  top: -15vh;
+  left: -10vw;
+  background: radial-gradient(ellipse, rgba(91, 110, 225, 0.18) 0%, transparent 70%);
+  animation: aurora-drift1 20s ease-in-out infinite;
+}
+
+.aurora__orb--2 {
+  width: 60vw;
+  height: 40vh;
+  top: 20vh;
+  right: -15vw;
+  background: radial-gradient(ellipse, rgba(123, 91, 225, 0.14) 0%, transparent 70%);
+  animation: aurora-drift2 28s ease-in-out infinite;
+}
+
+.aurora__orb--3 {
+  width: 50vw;
+  height: 35vh;
+  bottom: 20vh;
+  left: 10vw;
+  background: radial-gradient(ellipse, rgba(91, 225, 196, 0.10) 0%, transparent 70%);
+  animation: aurora-drift3 24s ease-in-out infinite;
+}
+
+@keyframes aurora-drift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 1; }
+  33%       { transform: translate(5vw, 3vh) scale(1.08); }
+  66%       { transform: translate(-3vw, 5vh) scale(0.95); }
+}
+
+@keyframes aurora-drift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 1; }
+  40%       { transform: translate(-4vw, -4vh) scale(1.1); }
+  70%       { transform: translate(2vw, 2vh) scale(0.92); }
+}
+
+@keyframes aurora-drift3 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 1; }
+  50%       { transform: translate(3vw, -3vh) scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora__orb {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ───────────────────────────────────────────────
+   4. グラスカード 共通
+─────────────────────────────────────────────── */
+.glass-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  box-shadow: var(--shadow-card);
+  transition:
+    background var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.glass-card:hover {
+  background: var(--surface-hover);
+}
+
+/* ───────────────────────────────────────────────
+   5. アプリヘッダー
+─────────────────────────────────────────────── */
+.app-header {
+  position: relative;
+  z-index: 1;
+  padding: calc(var(--safe-top) + 20px) 20px 0;
+  text-align: center;
+}
+
+.app-header__logo {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.app-header__icon {
+  font-size: 1.4rem;
+  filter: grayscale(1) brightness(1.6);
+  opacity: 0.9;
+}
+
+.app-header__title {
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  background: linear-gradient(135deg, var(--text) 30%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.app-header__subtitle {
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.app-header__tagline {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.18em;
+  margin-top: 2px;
+}
+
+/* ───────────────────────────────────────────────
+   6. ビュー切り替え
+─────────────────────────────────────────────── */
+.view {
+  display: none;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 80px);
+  animation: view-in var(--dur) var(--ease) both;
+}
+
+.view--active {
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.view-header {
+  padding: calc(var(--safe-top) + 24px) 20px 0;
+}
+
+.view-header__title {
+  font-size: 1.5rem;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.view-header__sub {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ───────────────────────────────────────────────
+   7. カテゴリタブ
+─────────────────────────────────────────────── */
+.category-tabs {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 20px 16px 4px;
+  gap: 10px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* app.jsが生成するカテゴリタブボタン */
+.category-tab {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition:
+    color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease-spring);
+  scroll-snap-align: start;
+  min-height: 36px;
+  min-width: 56px;
+  white-space: nowrap;
+}
+
+.category-tab:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.category-tab:active {
+  transform: scale(0.95);
+}
+
+.category-tab--active {
+  color: #fff;
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.category-tab__emoji {
+  font-size: 1rem;
+  filter: grayscale(1) brightness(1.5);
+  opacity: 0.8;
+  transition: filter var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+}
+
+.category-tab--active .category-tab__emoji {
+  filter: grayscale(0.3) brightness(1.4);
+  opacity: 1;
+}
+
+/* ───────────────────────────────────────────────
+   8. プリセットグリッド
+─────────────────────────────────────────────── */
+.preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+/* app.jsが生成するプリセットカード */
+.preset-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 18px 16px 14px;
+  border-radius: var(--radius);
+  text-align: left;
+
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  box-shadow: var(--shadow-card);
+
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow: hidden;
+
+  transition:
+    transform var(--dur-fast) var(--ease-spring),
+    background var(--dur-fast) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+  min-height: 110px;
+}
+
+/* アクセントグロー（--accent上書きで光る） */
+.preset-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse 80% 60% at 20% 20%, var(--accent-glow) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+  pointer-events: none;
+}
+
+.preset-card:hover {
+  transform: translateY(-2px) scale(1.01);
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
+}
+
+.preset-card:hover::before {
+  opacity: 1;
+}
+
+.preset-card:active {
+  transform: scale(0.97);
+  transition-duration: var(--dur-fast);
+}
+
+.preset-card--playing {
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+
+.preset-card--playing::before {
+  opacity: 1;
+}
+
+.preset-card__emoji {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+/* app.jsが生成するモノトーン絵文字（nav/tab/mixerと統一トーン） */
+.preset-card__emoji-mono {
+  filter: grayscale(1) brightness(1.5);
+  opacity: 0.85;
+  display: inline-block;
+}
+
+.preset-card__name {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.preset-card__band {
+  font-size: 0.68rem;
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: auto;
+}
+
+.preset-card__method {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* ───────────────────────────────────────────────
+   9. お気に入り空状態
+─────────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 32px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+.empty-state__icon {
+  font-size: 2.4rem;
+  opacity: 0.5;
+}
+
+/* ───────────────────────────────────────────────
+   10. カスタムビュー
+─────────────────────────────────────────────── */
+.custom-card {
+  margin: 20px 16px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+.form-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.form-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* セレクト */
+.select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-select {
+  width: 100%;
+  padding: 12px 40px 12px 14px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease);
+  min-height: 44px;
+}
+
+.form-select:hover,
+.form-select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 14px;
+  color: var(--text-dim);
+  pointer-events: none;
+  font-size: 0.75rem;
+}
+
+.select-wrapper--sm .form-select {
+  font-size: 0.8rem;
+}
+
+.form-select--sm {
+  padding: 8px 32px 8px 10px;
+  font-size: 0.8rem;
+  min-height: 36px;
+}
+
+/* range-hints */
+.range-hints {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  padding: 0 2px;
+  margin-top: -4px;
+}
+
+/* カスタム再生ボタン */
+.btn-play-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 24px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 80%, #fff 20%) 100%);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  transition:
+    transform var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease);
+  min-height: 54px;
+}
+
+.btn-play-custom:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px var(--accent-glow);
+}
+
+.btn-play-custom:active {
+  transform: scale(0.97);
+}
+
+.btn-play-custom__icon {
+  font-size: 1.1rem;
+}
+
+/* 脳波ガイド */
+.band-guide {
+  margin: 0 16px 20px;
+  padding: 20px;
+}
+
+.band-guide__title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  letter-spacing: 0.04em;
+}
+
+.band-guide__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.band-guide__item {
+  display: grid;
+  grid-template-columns: 10px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+}
+
+.band-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.band-guide__name {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.band-guide__range {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.band-guide__use {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+/* ───────────────────────────────────────────────
+   11. プレイヤー（ボトムシート）
+─────────────────────────────────────────────── */
+#player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(10, 8, 28, 0.85);
+  border-top: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  backdrop-filter: blur(var(--blur-lg));
+  -webkit-backdrop-filter: blur(var(--blur-lg));
+  box-shadow: var(--shadow-player);
+  transition:
+    transform var(--dur-slow) var(--ease),
+    height var(--dur-slow) var(--ease);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  will-change: transform, height;
+  padding-bottom: var(--safe-bottom);
+
+  /* stateマシン */
+  transform: translateY(100%);
+  height: 0;
+}
+
+/* hidden: 完全非表示 */
+#player[data-state="hidden"] {
+  transform: translateY(100%);
+  height: 0;
+  pointer-events: none;
+}
+
+/* mini: プレイバー */
+#player[data-state="mini"] {
+  transform: translateY(0);
+  height: calc(var(--player-mini-height) + var(--safe-bottom));
+}
+
+/* full: フルパネル */
+#player[data-state="full"] {
+  transform: translateY(0);
+  height: var(--player-full-height);
+  max-height: calc(100dvh - var(--safe-top) - 20px);
+  max-height: calc(100vh  - var(--safe-top) - 20px);
+}
+
+/* 全ての内容は overflow-y: auto でスクロール */
+#player[data-state="full"] .player__full {
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+#player[data-state="full"] .player__full::-webkit-scrollbar {
+  display: none;
+}
+
+/* fullではminibarを隠す（play-btnはfull用を使う） */
+#player[data-state="full"] .player__mini-bar {
+  display: none;
+}
+
+/* miniではフルパネルを隠す */
+#player[data-state="mini"] .player__full {
+  display: none;
+}
+
+/* hiddenでは全部隠す */
+#player[data-state="hidden"] .player__mini-bar,
+#player[data-state="hidden"] .player__full {
+  visibility: hidden;
+}
+
+/* ドラッグハンドル */
+.player__handle {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 4px;
+  flex-shrink: 0;
+}
+
+.player__handle-bar {
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.2);
+}
+
+#player[data-state="mini"] .player__handle {
+  display: none;
+}
+
+/* ミニバー */
+.player__mini-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px 0 16px;
+  height: var(--player-mini-height);
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.player__mini-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.player__mini-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* フルパネル */
+.player__full {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 24px;
+  overflow: hidden;
+}
+
+.player__info {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.player__preset-title {
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+/* player-titleはminiと共有。fullでは別spanで表示 */
+.player__title-text {
+  color: var(--text);
+}
+
+.player__band-badge {
+  display: inline-flex;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+/* ビジュアライザー */
+.player__visualizer-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.visualizer {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.2);
+  box-shadow: 0 0 40px var(--accent-glow), inset 0 0 20px rgba(0,0,0,0.3);
+}
+
+/* ヘッドホンヒント */
+.headphone-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,0.07);
+  margin: 0 auto 12px;
+  max-width: 280px;
+  width: 100%;
+}
+
+/* 再生コントロール */
+.player__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 16px;
+  gap: 16px;
+}
+
+/* アイコンボタン群 */
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--surface-border);
+  transition:
+    background var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-fast) var(--ease);
+}
+
+.icon-btn:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+.icon-btn:active {
+  transform: scale(0.9);
+}
+
+.icon-btn--fav[aria-pressed="true"] .icon-btn__icon,
+.icon-btn--fav.active .icon-btn__icon {
+  color: #ff6b9d;
+  text-shadow: 0 0 12px rgba(255, 107, 157, 0.7);
+}
+
+.icon-btn--placeholder {
+  width: 44px;
+  height: 44px;
+}
+
+/* 再生ボタン */
+.play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition:
+    transform var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease);
+}
+
+/* miniバー用 */
+.player__mini-bar .play-btn {
+  width: 44px;
+  height: 44px;
+  font-size: 1rem;
+  background: var(--accent);
+  box-shadow: 0 0 16px var(--accent-glow);
+  color: #fff;
+}
+
+/* フル用（大きい） */
+.play-btn--large {
+  width: 72px;
+  height: 72px;
+  font-size: 1.6rem;
+  background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 70%, #fff 30%) 100%);
+  box-shadow: 0 4px 28px var(--accent-glow), 0 0 0 6px var(--accent-dim);
+  color: #fff;
+}
+
+.play-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 32px var(--accent-glow), 0 0 0 8px var(--accent-dim);
+}
+
+.play-btn:active {
+  transform: scale(0.93);
+}
+
+/* 再生中アイコン変化はapp.jsがaria-pressedで制御 */
+.play-btn[aria-pressed="true"] .play-btn__icon::before {
+  content: '⏸';
+}
+
+.play-btn[aria-pressed="false"] .play-btn__icon::before,
+.play-btn .play-btn__icon::before {
+  content: '▶';
+}
+
+.play-btn__icon {
+  font-size: inherit;
+  line-height: 1;
+}
+
+/* aria-pressedでアイコン切り替え（.play-btn__icon子テキストをhide） */
+.play-btn .play-btn__icon {
+  position: relative;
+  font-size: 0;
+}
+
+.play-btn .play-btn__icon::before {
+  font-size: 1.2rem;
+}
+
+.play-btn--large .play-btn__icon::before {
+  font-size: 1.8rem;
+}
+
+/* 科学テキスト */
+.player__science {
+  margin: 8px 0 20px;
+}
+
+.science-text {
+  font-size: 0.844rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ───────────────────────────────────────────────
+   12. ミキサー
+─────────────────────────────────────────────── */
+.mixer {
+  padding: 20px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius);
+  border: 1px solid var(--surface-border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.mixer__title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mixer__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mixer__row--master {
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.mixer__label {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  min-width: 72px;
+  user-select: none;
+}
+
+/* ミキサーラベル内の絵文字を単色トーンに */
+.mixer__label [aria-hidden="true"] {
+  filter: grayscale(1) brightness(1.5);
+  opacity: 0.8;
+}
+
+.mixer__select-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: -8px;
+  margin-left: 84px;
+}
+
+.mixer__sub-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ───────────────────────────────────────────────
+   13. レンジスライダー（共通）
+─────────────────────────────────────────────── */
+.range-slider {
+  flex: 1;
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+/* Track */
+.range-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--accent) var(--range-progress, 50%),
+    rgba(255,255,255,0.12) var(--range-progress, 50%)
+  );
+}
+
+.range-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+}
+
+.range-slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* Thumb */
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow), 0 2px 6px rgba(0,0,0,0.4);
+  margin-top: -7px;
+  transition:
+    transform var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-fast) var(--ease);
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 14px var(--accent-glow), 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.range-slider::-webkit-slider-thumb:active {
+  transform: scale(1.3);
+}
+
+.range-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+  cursor: grab;
+}
+
+.range-slider::-moz-range-thumb:active {
+  cursor: grabbing;
+}
+
+/* ミキサー内スライダー（少し細い） */
+.range-slider--mixer::-webkit-slider-runnable-track {
+  height: 3px;
+}
+
+.range-slider--mixer::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  margin-top: -6.5px;
+}
+
+/* マスター強調 */
+.range-slider--master::-webkit-slider-runnable-track {
+  height: 5px;
+}
+
+.range-slider--master::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+  margin-top: -7.5px;
+}
+
+/* ───────────────────────────────────────────────
+   14. タイマー
+─────────────────────────────────────────────── */
+.timer {
+  padding: 20px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius);
+  border: 1px solid var(--surface-border);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.timer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timer__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.timer-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  min-height: 36px;
+  min-width: 48px;
+  transition:
+    color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease-spring);
+}
+
+.timer-chip:hover {
+  color: var(--text);
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+.timer-chip:active {
+  transform: scale(0.92);
+}
+
+.timer-chip--active {
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.timer__remaining {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+/* ───────────────────────────────────────────────
+   15. ボトムナビゲーション
+─────────────────────────────────────────────── */
+#nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  height: calc(var(--nav-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: rgba(8, 6, 22, 0.88);
+  border-top: 1px solid var(--surface-border);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+}
+
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 4px 4px;
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  transition:
+    color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease-spring);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.nav-btn:active {
+  transform: scale(0.88);
+}
+
+.nav-btn--active {
+  color: var(--accent);
+}
+
+.nav-btn__icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  filter: grayscale(1) brightness(1.5);
+  opacity: 0.75;
+  transition:
+    transform var(--dur-fast) var(--ease-spring),
+    filter var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease);
+}
+
+.nav-btn--active .nav-btn__icon {
+  transform: scale(1.1);
+  filter: grayscale(0.5) brightness(1.3) drop-shadow(0 0 6px var(--accent));
+  opacity: 1;
+}
+
+.nav-btn__label {
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+}
+
+/* ───────────────────────────────────────────────
+   16. トースト通知
+─────────────────────────────────────────────── */
+#toast {
+  position: fixed;
+  bottom: calc(var(--nav-height) + var(--safe-bottom) + 16px);
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  z-index: 500;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: rgba(30, 25, 60, 0.95);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 400;
+  white-space: nowrap;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  pointer-events: none;
+  opacity: 1;
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+#toast[hidden] {
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px);
+  display: block !important; /* hidden属性でもCSSトランジション維持 */
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* app.jsがhidden属性を外してトーストを表示する */
+
+/* ───────────────────────────────────────────────
+   17. ユーティリティ / アニメーション補助
+─────────────────────────────────────────────── */
+
+/* アクセント同期（--accentが変わると派生値も変わる） */
+:root {
+  --accent-glow: color-mix(in srgb, var(--accent) 35%, transparent);
+  --accent-dim:  color-mix(in srgb, var(--accent) 60%, #0a0a1a);
+}
+
+/* full展開時スクリム: viewport全面（ヘッダー含む）を覆う独立要素 */
+.player-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: rgba(5, 5, 15, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-slow, 0.4s) var(--ease, ease);
+}
+
+#player[data-state="full"] ~ .player-scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-scrim {
+    transition: none;
+  }
+  #player[data-state="full"] ~ .player-scrim {
+    background: rgba(5, 5, 15, 0.80);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* pulsing glow（再生中のビジュアライザー外周） */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 24px var(--accent-glow), inset 0 0 16px rgba(0,0,0,0.3); }
+  50%       { box-shadow: 0 0 48px var(--accent-glow), inset 0 0 20px rgba(0,0,0,0.4); }
+}
+
+#player[data-state="full"] .visualizer {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #player[data-state="full"] .visualizer {
+    animation: none;
+  }
+}
+
+/* フェードイン補助 */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ───────────────────────────────────────────────
+   18. レスポンシブ（大画面）
+─────────────────────────────────────────────── */
+@media (min-width: 480px) {
+  .preset-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 640px) {
+  #app {
+    max-width: 540px;
+    margin: 0 auto;
+    min-height: 100dvh;
+    position: relative;
+    box-shadow: 0 0 80px rgba(0,0,0,0.6);
+  }
+
+  .aurora {
+    /* 全画面に広がる */
+    max-width: none;
+    left: 0;
+    right: 0;
+  }
+
+  #nav {
+    max-width: 540px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #player {
+    max-width: 540px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: var(--radius-lg);
+  }
+
+  #player[data-state="hidden"] {
+    transform: translateX(-50%) translateY(100%);
+  }
+
+  #player[data-state="mini"],
+  #player[data-state="full"] {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .preset-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .visualizer {
+    width: 240px;
+    height: 240px;
+  }
+}
+
+/* ───────────────────────────────────────────────
+   19. ダークモード強制（アプリ自体がダークUI）
+─────────────────────────────────────────────── */
+@media (prefers-color-scheme: light) {
+  /* Hibikiは常にダークUIなのでlight modeでも変えない */
+  :root {
+    color-scheme: dark;
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+/* ───────────────────────────────────────────────
+   20. print / accessibility
+─────────────────────────────────────────────── */
+@media print {
+  #player,
+  #nav,
+  .aurora,
+  #toast {
+    display: none !important;
+  }
+}
+
+/* スクリーンリーダー専用 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
