@@ -64,6 +64,9 @@ const state = {
 const engine = new AudioEngine();
 let visualizer = null;
 
+// デバッグ/診断フック（無害・開発者コンソールから状態確認用）
+if (typeof window !== 'undefined') window.__hibikiEngine = engine;
+
 // ──────────────────────────────────────────────
 // DOM ヘルパ
 // ──────────────────────────────────────────────
@@ -380,7 +383,7 @@ async function startPlayback() {
     visualizer.attach(engine.getAnalyser(), () => engine.getCurrentBeatHz());
   }
 
-  await engine.play({ fadeInSec: 2 });
+  await engine.play({ fadeInSec: 1.2 });
   if (visualizer) visualizer.start();
 
   updatePlayBtn(true);

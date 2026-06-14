@@ -5,7 +5,7 @@
  * CACHE_VERSION を上げると旧キャッシュを破棄して再取得。
  */
 
-const CACHE_VERSION = 'hibiki-v3';
+const CACHE_VERSION = 'hibiki-v4';
 
 /** プリキャッシュするアセット一覧 */
 const APP_SHELL = [
